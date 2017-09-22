@@ -33,40 +33,46 @@ class ViewController: UIViewController {
         
     }
 
-    @IBAction func consultarCEP(sender: AnyObject) {
+    @IBAction func consultarCEP(_ sender: AnyObject) {
         
-        let session = NSURLSession.sharedSession()
+        let session = URLSession.shared
         
-        let urlPath = NSURL(string: "https://viacep.com.br/ws/"+self.txtCEP.text!+"/json")
-        let request = NSMutableURLRequest(URL: urlPath!)
+        let urlPath = URL(string: "https://viacep.com.br/ws/"+self.txtCEP.text!+"/json")
+        var request = URLRequest(url: urlPath!)
         request.timeoutInterval = 60
-        request.cachePolicy = NSURLRequestCachePolicy.ReloadIgnoringLocalCacheData
+        request.cachePolicy = NSURLRequest.CachePolicy.reloadIgnoringLocalCacheData
         
-        let dataTask = session.dataTaskWithRequest(request) { (data:NSData?, response:NSURLResponse?, error:NSError?) -> Void in
+        session.dataTask(with: request, completionHandler: { (data, response, error) -> Void in
             
             if((error) != nil) {
                 print(error!.localizedDescription)
-            }else {
-                _ = NSString(data: data!, encoding:NSUTF8StringEncoding)
-                let _: NSError?
-                let jsonResult: AnyObject = try! NSJSONSerialization.JSONObjectWithData(data!, options:NSJSONReadingOptions.MutableContainers)
-                
-                dispatch_async(dispatch_get_main_queue(), {
-                    let dic: NSDictionary = (jsonResult as! NSDictionary);
+            } else {
+                do {
+                    _ = NSString(data: data!, encoding:String.Encoding.utf8.rawValue)
+                    let _: NSError?
+                    let jsonResult = try JSONSerialization.jsonObject(with: data!, options:JSONSerialization.ReadingOptions.mutableContainers)
                     
-                    if dic.count > 1 {
-                        self.preencheDados(jsonResult as! NSDictionary)
-                    } else {
+                    DispatchQueue.main.async(execute: {
+                        let dic: NSDictionary = (jsonResult as! NSDictionary);
+                        
+                        if dic.count > 1 {
+                            self.preencheDados(jsonResult as! NSDictionary)
+                        } else {
+                            self.preencheDados(nil)
+                        }
+                    })
+                } catch {
+                    DispatchQueue.main.async(execute: {
                         self.preencheDados(nil)
-                    }
-                })
+                    })
+                }
             }
-        }
-        dataTask.resume()
+            
+        }).resume()
         
     }
     
-    func preencheDados(dados:NSDictionary!) {
+    func preencheDados(_ dados:NSDictionary!) {
         
         let x: CGFloat = 20
         var y: CGFloat = 95
@@ -78,13 +84,13 @@ class ViewController: UIViewController {
             label = theLabel
             label.removeFromSuperview()
         } else {
-            label = UILabel(frame: CGRectMake(x, y, w, h))
+            label = UILabel(frame: CGRect(x: x, y: y, width: w, height: h))
         }
         label.tag = 1000;
         if dados == nil {
             label.text = "";
         } else {
-            label.text = "CEP: "+(dados.valueForKey(self.kCep) as! String);
+            label.text = "CEP: "+(dados.value(forKey: self.kCep) as! String);
         }
         self.view.addSubview(label)
         y += h;
@@ -93,13 +99,13 @@ class ViewController: UIViewController {
             label = theLabel
             label.removeFromSuperview()
         } else {
-            label = UILabel(frame: CGRectMake(x, y, w, h))
+            label = UILabel(frame: CGRect(x: x, y: y, width: w, height: h))
         }
         label.tag = 1001;
         if dados == nil {
             label.text = "";
         } else {
-            label.text = "Cidade/UF: "+(dados.valueForKey(self.kLocalidade) as! String)+"/"+(dados.valueForKey(self.kUF) as! String);
+            label.text = "Cidade/UF: "+(dados.value(forKey: self.kLocalidade) as! String)+"/"+(dados.value(forKey: self.kUF) as! String);
         }
         self.view.addSubview(label)
         y += h;
@@ -108,13 +114,13 @@ class ViewController: UIViewController {
             label = theLabel
             label.removeFromSuperview()
         } else {
-            label = UILabel(frame: CGRectMake(x, y, w, h))
+            label = UILabel(frame: CGRect(x: x, y: y, width: w, height: h))
         }
         label.tag = 1002;
         if dados == nil {
             label.text = "";
         } else {
-            label.text = "Bairro: "+(dados.valueForKey(self.kBairro) as! String);
+            label.text = "Bairro: "+(dados.value(forKey: self.kBairro) as! String);
         }
         self.view.addSubview(label)
         y += h;
@@ -123,13 +129,13 @@ class ViewController: UIViewController {
             label = theLabel
             label.removeFromSuperview()
         } else {
-            label = UILabel(frame: CGRectMake(x, y, w, h))
+            label = UILabel(frame: CGRect(x: x, y: y, width: w, height: h))
         }
         label.tag = 1003;
         if dados == nil {
             label.text = "";
         } else {
-            label.text = "Logradouro: "+(dados.valueForKey(self.kLogradouro) as! String);
+            label.text = "Logradouro: "+(dados.value(forKey: self.kLogradouro) as! String);
         }
         self.view.addSubview(label)
         y += h;
@@ -138,13 +144,13 @@ class ViewController: UIViewController {
             label = theLabel
             label.removeFromSuperview()
         } else {
-            label = UILabel(frame: CGRectMake(x, y, w, h))
+            label = UILabel(frame: CGRect(x: x, y: y, width: w, height: h))
         }
         label.tag = 1004;
         if dados == nil {
             label.text = "";
         } else {
-            label.text = "Complemento: "+(dados.valueForKey(self.kComplemento) as! String);
+            label.text = "Complemento: "+(dados.value(forKey: self.kComplemento) as! String);
         }
         self.view.addSubview(label)
         y += h;
@@ -153,13 +159,13 @@ class ViewController: UIViewController {
             label = theLabel
             label.removeFromSuperview()
         } else {
-            label = UILabel(frame: CGRectMake(x, y, w, h))
+            label = UILabel(frame: CGRect(x: x, y: y, width: w, height: h))
         }
         label.tag = 1005;
         if dados == nil {
             label.text = "";
         } else {
-            label.text = "IBGE: "+(dados.valueForKey(self.kIbge) as! String)+" - GIA: "+(dados.valueForKey(self.kGia) as! String);
+            label.text = "IBGE: "+(dados.value(forKey: self.kIbge) as! String)+" - GIA: "+(dados.value(forKey: self.kGia) as! String);
         }
         self.view.addSubview(label)
         y += h;
